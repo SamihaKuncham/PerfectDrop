@@ -10,7 +10,7 @@ export class Game extends Scene
     create ()
     {
         // =================================================
-        // SETTINGS
+        // CORE SETTINGS
         // =================================================
 
         this.gameWidth = 1024;
@@ -21,19 +21,19 @@ export class Game extends Scene
 
         this.blockSpeed = 280;
         this.speedIncrease = 8;
+        this.maxBlockSpeed = 650;
 
         this.minimumBlockWidth = 18;
 
-        // Camera follows the moving block after it reaches
-        // roughly 65% of the visible screen.
+        // Start camera following when the moving block
+        // reaches 65% of the visible screen.
         this.cameraFollowY =
             this.gameHeight * 0.65;
 
-        // Perfect = center is within this many pixels.
         this.perfectTolerance = 7;
 
         // =================================================
-        // SCORE / COMBO
+        // GAME STATE
         // =================================================
 
         this.score = 0;
@@ -48,164 +48,102 @@ export class Game extends Scene
 
         this.gameOver = false;
         this.isDropping = false;
+        this.instructionHidden = false;
 
         // =================================================
-        // COLORS
+        // VISUAL PALETTE
         // =================================================
 
-        this.blockColors = [
-            0x5B8DEF, // Electric blue
-            0x8B5CF6, // Violet
-            0xEC4899, // Pink
-            0xF97316, // Tangerine
-            0xFBBF24, // Amber
-            0x10B981, // Emerald
-            0x06B6D4, // Cyan
-            0x6366F1  // Indigo
+        this.blockPalette = [
+            {
+                body: 0x38BDF8,
+                shadow: 0x0EA5E9,
+                highlight: 0xCFFAFE,
+                glow: 0x38BDF8
+            },
+
+            {
+                body: 0x8B5CF6,
+                shadow: 0x6D28D9,
+                highlight: 0xEDE9FE,
+                glow: 0x8B5CF6
+            },
+
+            {
+                body: 0xEC4899,
+                shadow: 0xBE185D,
+                highlight: 0xFCE7F3,
+                glow: 0xEC4899
+            },
+
+            {
+                body: 0xFB7185,
+                shadow: 0xE11D48,
+                highlight: 0xFFE4E6,
+                glow: 0xFB7185
+            },
+
+            {
+                body: 0xFBBF24,
+                shadow: 0xD97706,
+                highlight: 0xFEF3C7,
+                glow: 0xFBBF24
+            },
+
+            {
+                body: 0x34D399,
+                shadow: 0x059669,
+                highlight: 0xD1FAE5,
+                glow: 0x34D399
+            },
+
+            {
+                body: 0x22D3EE,
+                shadow: 0x0891B2,
+                highlight: 0xCFFAFE,
+                glow: 0x22D3EE
+            },
+
+            {
+                body: 0x6366F1,
+                shadow: 0x4F46E5,
+                highlight: 0xE0E7FF,
+                glow: 0x6366F1
+            }
         ];
 
+        this.perfectPalette = {
+            body: 0xFDE047,
+            shadow: 0xCA8A04,
+            highlight: 0xFEF9C3,
+            glow: 0xFACC15
+        };
+
         // =================================================
-        // CAMERA
+        // BACKGROUND
         // =================================================
 
         this.cameras.main.setBackgroundColor(
-            '#080C1A'
+            '#070B18'
         );
-
-        // -------------------------------------------------
-        // Subtle background atmosphere
-        // -------------------------------------------------
-
-        const glow1 =
-        this.add.circle(
-            160,
-            180,
-            170,
-            0x312E81,
-            0.10
-        );
-
-        glow1.setScrollFactor(0);
-
-        const glow2 =
-        this.add.circle(
-            880,
-            500,
-            220,
-            0x0E7490,
-            0.08
-        );
-
-        glow2.setScrollFactor(0);
-
-        const glow3 =
-        this.add.circle(
-            500,
-            900,
-            260,
-            0x7C3AED,
-            0.06
-        );
-
-        glow3.setScrollFactor(0);
 
         this.cameras.main.scrollY = 0;
 
-        // =================================================
-        // UI
-        // =================================================
-
-        this.titleText =
-            this.add.text(
-                512,
-                34,
-                'PERFECT DROP',
-                {
-                    fontFamily: 'Arial Black',
-                    fontSize: 32,
-                    color: '#ffffff'
-                }
-            )
-            .setOrigin(0.5)
-            .setScrollFactor(0);
-
-        this.scoreText =
-            this.add.text(
-                512,
-                84,
-                '0',
-                {
-                    fontFamily: 'Arial Black',
-                    fontSize: 34,
-                    color: '#F8FAFC'
-                }
-            )
-            .setOrigin(0.5)
-            .setScrollFactor(0);
-
-        this.bestText =
-            this.add.text(
-                960,
-                38,
-                `BEST ${this.highScore}`,
-                {
-                    fontFamily: 'Arial',
-                    fontSize: 18,
-                    color: '#94a3b8'
-                }
-            )
-            .setOrigin(1, 0.5)
-            .setScrollFactor(0);
-
-        this.comboText =
-            this.add.text(
-                512,
-                126,
-                '',
-                {
-                    fontFamily: 'Arial Black',
-                    fontSize: 23,
-                    color: '#A78BFA'
-                }
-            )
-            .setOrigin(0.5)
-            .setScrollFactor(0);
-
-        this.perfectStreakText =
-            this.add.text(
-                512,
-                154,
-                '',
-                {
-                    fontFamily: 'Arial',
-                    fontSize: 18,
-                    color: '#facc15'
-                }
-            )
-            .setOrigin(0.5)
-            .setScrollFactor(0);
-
-        this.instructionText =
-            this.add.text(
-                512,
-                735,
-                'TAP  •  CLICK  •  SPACE  •  ENTER',
-                {
-                    fontFamily: 'Arial',
-                    fontSize: 20,
-                    color: '#cbd5e1'
-                }
-            )
-            .setOrigin(0.5)
-            .setScrollFactor(0);
+        this.createBackground();
 
         // =================================================
-        // BASE BLOCK
+        // HUD
+        // =================================================
+
+        this.createHUD();
+
+        // =================================================
+        // INITIAL BASE
         // =================================================
 
         this.baseX = 512;
 
-        // First block starts at the bottom.
+        // First block is near the bottom.
         this.baseY = 700;
 
         this.baseWidth =
@@ -216,8 +154,13 @@ export class Game extends Scene
                 this.baseX,
                 this.baseY,
                 this.baseWidth,
-                0x6366f1
+                this.getBlockPalette(0),
+                false
             );
+
+        this.blocks = [
+            this.baseBlock
+        ];
 
         // =================================================
         // FIRST MOVING BLOCK
@@ -239,26 +182,418 @@ export class Game extends Scene
         // INPUT
         // =================================================
 
+        // Mouse / touch
         this.input.on(
             'pointerdown',
             this.dropBlock,
             this
         );
-    
 
-            // Keyboard controls
-        this.input.keyboard.on(
-            'keydown-SPACE',
-            this.dropBlock,
-            this
+        // Space
+        if (this.input.keyboard)
+        {
+            this.input.keyboard.on(
+                'keydown-SPACE',
+                this.dropBlock,
+                this
+            );
+
+            // Enter
+            this.input.keyboard.on(
+                'keydown-ENTER',
+                this.dropBlock,
+                this
+            );
+        }
+    }
+
+    // =====================================================
+    // BACKGROUND
+    // =====================================================
+
+    createBackground ()
+    {
+        const background =
+            this.add.graphics();
+
+        background.setScrollFactor(0);
+
+        /*
+         * Layered color bands give us a soft gradient-like
+         * background while remaining renderer-friendly.
+         */
+
+        const bands = [
+            0x070B18,
+            0x080C1D,
+            0x090E22,
+            0x0A1027,
+            0x0B122C,
+            0x0C1431,
+            0x0D1635,
+            0x0E1838,
+            0x101A3C,
+            0x111C40,
+            0x121F44,
+            0x142248
+        ];
+
+        const bandHeight =
+            this.gameHeight /
+            bands.length;
+
+        for (
+            let i = 0;
+            i < bands.length;
+            i++
+        )
+        {
+            background.fillStyle(
+                bands[i],
+                1
+            );
+
+            background.fillRect(
+                0,
+                i * bandHeight,
+                this.gameWidth,
+                bandHeight + 2
+            );
+        }
+
+        // -------------------------------------------------
+        // Soft ambient glows
+        // -------------------------------------------------
+
+        background.fillStyle(
+            0x6366F1,
+            0.045
         );
 
-        this.input.keyboard.on(
-            'keydown-ENTER',
-            this.dropBlock,
-            this
+        background.fillCircle(
+            150,
+            175,
+            190
         );
 
+        background.fillStyle(
+            0x22D3EE,
+            0.035
+        );
+
+        background.fillCircle(
+            870,
+            450,
+            230
+        );
+
+        background.fillStyle(
+            0xEC4899,
+            0.025
+        );
+
+        background.fillCircle(
+            520,
+            750,
+            280
+        );
+
+        // -------------------------------------------------
+        // Tiny stars / particles
+        // -------------------------------------------------
+
+        const stars = [
+            [84, 160, 2],
+            [180, 280, 1],
+            [286, 118, 2],
+            [370, 210, 1],
+            [462, 155, 1],
+            [602, 245, 2],
+            [700, 135, 1],
+            [810, 205, 2],
+            [932, 115, 1],
+            [950, 320, 2],
+            [120, 470, 1],
+            [250, 390, 2],
+            [760, 370, 1],
+            [860, 520, 2],
+            [680, 610, 1],
+            [325, 575, 1]
+        ];
+
+        for (const star of stars)
+        {
+            background.fillStyle(
+                0xFFFFFF,
+                0.10 + Math.random() * 0.12
+            );
+
+            background.fillCircle(
+                star[0],
+                star[1],
+                star[2]
+            );
+        }
+
+        // Keep the background behind everything.
+        background.setDepth(-100);
+    }
+
+    // =====================================================
+    // HUD
+    // =====================================================
+
+        createHUD ()
+    {
+        // =================================================
+        // MAIN HUD PANEL
+        // =================================================
+
+        this.hudPanel =
+            this.add.graphics();
+
+        this.hudPanel.setScrollFactor(0);
+
+        this.hudPanel.fillStyle(
+            0x111A32,
+            0.82
+        );
+
+        this.hudPanel.fillRoundedRect(
+            350,
+            10,
+            324,
+            164,
+            20
+        );
+
+        this.hudPanel.lineStyle(
+            1,
+            0xFFFFFF,
+            0.10
+        );
+
+        this.hudPanel.strokeRoundedRect(
+            350,
+            10,
+            324,
+            164,
+            20
+        );
+
+        // =================================================
+        // TITLE
+        // =================================================
+
+        this.titleText =
+            this.add.text(
+                512,
+                36,
+                'PERFECT DROP',
+                {
+                    fontFamily:
+                        'Arial Black',
+
+                    fontSize:
+                        30,
+
+                    color:
+                        '#F8FAFC',
+
+                    stroke:
+                        '#050816',
+
+                    strokeThickness:
+                        3
+                }
+            )
+            .setOrigin(0.5)
+            .setScrollFactor(0);
+
+        // =================================================
+        // SCORE
+        // =================================================
+
+        this.scoreText =
+            this.add.text(
+                512,
+                80,
+                '0',
+                {
+                    fontFamily:
+                        'Arial Black',
+
+                    fontSize:
+                        36,
+
+                    color:
+                        '#FFFFFF',
+
+                    stroke:
+                        '#050816',
+
+                    strokeThickness:
+                        3
+                }
+            )
+            .setOrigin(0.5)
+            .setScrollFactor(0);
+
+        // =================================================
+        // COMBO
+        // =================================================
+
+        this.comboText =
+            this.add.text(
+                512,
+                119,
+                '',
+                {
+                    fontFamily:
+                        'Arial Black',
+
+                    fontSize:
+                        20,
+
+                    color:
+                        '#A78BFA'
+                }
+            )
+            .setOrigin(0.5)
+            .setScrollFactor(0);
+
+        // =================================================
+        // PERFECT STREAK
+        // =================================================
+
+        this.perfectStreakText =
+            this.add.text(
+                512,
+                149,
+                '',
+                {
+                    fontFamily:
+                        'Arial',
+
+                    fontSize:
+                        16,
+
+                    color:
+                        '#FDE047'
+                }
+            )
+            .setOrigin(0.5)
+            .setScrollFactor(0);
+
+        // =================================================
+        // BEST SCORE PILL
+        // =================================================
+
+        this.bestPanel =
+            this.add.graphics();
+
+        this.bestPanel.setScrollFactor(0);
+
+        this.bestPanel.fillStyle(
+            0x111A32,
+            0.88
+        );
+
+        this.bestPanel.fillRoundedRect(
+            858,
+            18,
+            140,
+            42,
+            21
+        );
+
+        this.bestPanel.lineStyle(
+            1,
+            0xFFFFFF,
+            0.10
+        );
+
+        this.bestPanel.strokeRoundedRect(
+            858,
+            18,
+            140,
+            42,
+            21
+        );
+
+        this.bestText =
+            this.add.text(
+                928,
+                39,
+                `BEST ${this.highScore}`,
+                {
+                    fontFamily:
+                        'Arial Black',
+
+                    fontSize:
+                        16,
+
+                    color:
+                        '#CBD5E1'
+                }
+            )
+            .setOrigin(0.5)
+            .setScrollFactor(0);
+
+        // =================================================
+        // BOTTOM INSTRUCTION
+        // =================================================
+
+        this.instructionPanel =
+            this.add.graphics();
+
+        this.instructionPanel.setScrollFactor(0);
+
+        this.instructionPanel.fillStyle(
+            0x0F172A,
+            0.80
+        );
+
+        this.instructionPanel.fillRoundedRect(
+            342,
+            708,
+            340,
+            38,
+            19
+        );
+
+        this.instructionPanel.lineStyle(
+            1,
+            0xFFFFFF,
+            0.06
+        );
+
+        this.instructionPanel.strokeRoundedRect(
+            342,
+            708,
+            340,
+            38,
+            19
+        );
+
+        this.instructionText =
+            this.add.text(
+                512,
+                727,
+                'TAP  •  CLICK  •  SPACE  •  ENTER',
+                {
+                    fontFamily:
+                        'Arial',
+
+                    fontSize:
+                        15,
+
+                    color:
+                        '#CBD5E1'
+                }
+            )
+            .setOrigin(0.5)
+            .setScrollFactor(0);
     }
 
     // =====================================================
@@ -293,8 +628,20 @@ export class Game extends Scene
         }
         catch (error)
         {
-            // Ignore storage errors.
+            // Storage may be unavailable.
         }
+    }
+
+    // =====================================================
+    // BLOCK PALETTE
+    // =====================================================
+
+    getBlockPalette (index)
+    {
+        return this.blockPalette[
+            index %
+            this.blockPalette.length
+        ];
     }
 
     // =====================================================
@@ -305,42 +652,259 @@ export class Game extends Scene
         x,
         y,
         width,
-        color
+        palette,
+        isMoving = false,
+        isPerfect = false
     )
     {
-        const block =
-            this.add.rectangle(
+        const container =
+            this.add.container(
                 x,
-                y,
-                width,
-                this.blockHeight,
-                color
+                y
             );
-    
-        block.setStrokeStyle(
-            2,
-            0xffffff,
-            0.22
+
+        container.blockWidth =
+            width;
+
+        container.blockHeight =
+            this.blockHeight;
+
+        container.palette =
+            palette;
+
+        container.isPerfect =
+            isPerfect;
+
+        container.visual =
+            this.add.graphics();
+
+        container.add(
+            container.visual
         );
-    
-        return block;
+
+        this.drawBlockVisual(
+            container
+        );
+
+        // Moving blocks have a little more presence.
+        if (isMoving)
+        {
+            container.setAlpha(0.98);
+        }
+
+        return container;
     }
 
     // =====================================================
-    // GET COLOR
+    // DRAW BLOCK VISUAL
     // =====================================================
 
-    getBlockColor ()
+    drawBlockVisual (
+        block
+    )
     {
-        const index =
-            this.score %
-            this.blockColors.length;
+        const graphics =
+            block.visual;
 
-        return this.blockColors[index];
+        graphics.clear();
+
+        const width =
+            Math.max(
+                18,
+                block.blockWidth
+            );
+
+        const height =
+            this.blockHeight;
+
+        const radius =
+            Math.min(
+                8,
+                height / 2,
+                width / 2
+            );
+
+        const palette =
+            block.palette;
+
+        // -------------------------------------------------
+        // Soft outer glow
+        // -------------------------------------------------
+
+        graphics.fillStyle(
+            palette.glow,
+            block.isPerfect
+                ? 0.18
+                : 0.055
+        );
+
+        graphics.fillRoundedRect(
+            -width / 2 - 5,
+            -height / 2 - 4,
+            width + 10,
+            height + 8,
+            radius + 3
+        );
+
+        // -------------------------------------------------
+        // Shadow
+        // -------------------------------------------------
+
+        graphics.fillStyle(
+            0x000000,
+            0.24
+        );
+
+        graphics.fillRoundedRect(
+            -width / 2 + 2,
+            -height / 2 + 4,
+            width,
+            height,
+            radius
+        );
+
+        // -------------------------------------------------
+        // Dark outer body
+        // -------------------------------------------------
+
+        graphics.fillStyle(
+            palette.shadow,
+            1
+        );
+
+        graphics.fillRoundedRect(
+            -width / 2,
+            -height / 2,
+            width,
+            height,
+            radius
+        );
+
+        // -------------------------------------------------
+        // Main body
+        // -------------------------------------------------
+
+        graphics.fillStyle(
+            palette.body,
+            1
+        );
+
+        graphics.fillRoundedRect(
+            -width / 2,
+            -height / 2,
+            width,
+            height - 3,
+            radius
+        );
+
+        // -------------------------------------------------
+        // Soft top highlight
+        // -------------------------------------------------
+
+        const highlightWidth =
+            Math.max(
+                5,
+                width - 10
+            );
+
+        graphics.fillStyle(
+            palette.highlight,
+            0.30
+        );
+
+        graphics.fillRoundedRect(
+            -highlightWidth / 2,
+            -height / 2 + 3,
+            highlightWidth,
+            4,
+            2
+        );
+
+        // -------------------------------------------------
+        // Tiny left-edge shine
+        // -------------------------------------------------
+
+        if (width > 24)
+        {
+            graphics.fillStyle(
+                0xFFFFFF,
+                0.10
+            );
+
+            graphics.fillRoundedRect(
+                -width / 2 + 4,
+                -height / 2 + 8,
+                3,
+                height - 16,
+                1.5
+            );
+        }
+
+        // -------------------------------------------------
+        // Perfect block gets an extra edge
+        // -------------------------------------------------
+
+        if (block.isPerfect)
+        {
+            graphics.lineStyle(
+                2,
+                0xFFF7AE,
+                0.75
+            );
+
+            graphics.strokeRoundedRect(
+                -width / 2,
+                -height / 2,
+                width,
+                height - 1,
+                radius
+            );
+        }
+        else
+        {
+            graphics.lineStyle(
+                1,
+                0xFFFFFF,
+                0.12
+            );
+
+            graphics.strokeRoundedRect(
+                -width / 2,
+                -height / 2,
+                width,
+                height - 1,
+                radius
+            );
+        }
     }
 
     // =====================================================
-    // CREATE MOVING BLOCK
+    // UPDATE BLOCK VISUAL
+    // =====================================================
+
+    updateBlockVisual (
+        block,
+        width,
+        palette,
+        isPerfect
+    )
+    {
+        block.blockWidth =
+            width;
+
+        block.palette =
+            palette;
+
+        block.isPerfect =
+            isPerfect;
+
+        this.drawBlockVisual(
+            block
+        );
+    }
+
+    // =====================================================
+    // MOVING BLOCK
     // =====================================================
 
     createMovingBlock ()
@@ -357,7 +921,9 @@ export class Game extends Scene
             startX,
             this.currentY,
             this.currentWidth,
-            this.getBlockColor()
+            this.getBlockPalette(this.score),
+            true,
+            false
         );
     }
 
@@ -373,7 +939,7 @@ export class Game extends Scene
         }
 
         // -------------------------------------------------
-        // MOVE BLOCK
+        // Move current block
         // -------------------------------------------------
 
         if (
@@ -392,7 +958,7 @@ export class Game extends Scene
             const halfWidth =
                 this.currentWidth / 2;
 
-            // Right boundary
+            // Right wall
             if (
                 this.currentBlock.x +
                 halfWidth >=
@@ -406,7 +972,7 @@ export class Game extends Scene
                 this.movingDirection = -1;
             }
 
-            // Left boundary
+            // Left wall
             if (
                 this.currentBlock.x -
                 halfWidth <=
@@ -421,7 +987,7 @@ export class Game extends Scene
         }
 
         // -------------------------------------------------
-        // CAMERA
+        // Camera
         // -------------------------------------------------
 
         this.updateCamera();
@@ -440,13 +1006,6 @@ export class Game extends Scene
 
         let targetScrollY = 0;
 
-        /*
-         * No camera movement initially.
-         *
-         * Once the moving block rises above 65% of the
-         * screen, the camera follows it.
-         */
-
         if (
             this.currentBlock.y <
             this.cameraFollowY
@@ -457,7 +1016,7 @@ export class Game extends Scene
                 this.cameraFollowY;
         }
 
-        // Never move camera downward.
+        // Never move downward.
         targetScrollY =
             Math.min(
                 0,
@@ -467,7 +1026,7 @@ export class Game extends Scene
         const currentScrollY =
             this.cameras.main.scrollY;
 
-        // Smooth but responsive camera movement.
+        // Smooth follow.
         this.cameras.main.scrollY =
             currentScrollY +
             (
@@ -477,7 +1036,7 @@ export class Game extends Scene
     }
 
     // =====================================================
-    // DROP BLOCK
+    // DROP
     // =====================================================
 
     dropBlock ()
@@ -494,7 +1053,7 @@ export class Game extends Scene
         this.isDropping = true;
 
         // -------------------------------------------------
-        // PREVIOUS BLOCK
+        // Previous block bounds
         // -------------------------------------------------
 
         const previousLeft =
@@ -506,7 +1065,7 @@ export class Game extends Scene
             this.baseWidth / 2;
 
         // -------------------------------------------------
-        // CURRENT BLOCK
+        // Current block bounds
         // -------------------------------------------------
 
         const currentLeft =
@@ -518,7 +1077,7 @@ export class Game extends Scene
             this.currentWidth / 2;
 
         // -------------------------------------------------
-        // OVERLAP
+        // Calculate overlap
         // -------------------------------------------------
 
         const overlapLeft =
@@ -538,7 +1097,7 @@ export class Game extends Scene
             overlapLeft;
 
         // -------------------------------------------------
-        // COMPLETE MISS
+        // Complete miss
         // -------------------------------------------------
 
         if (
@@ -551,7 +1110,7 @@ export class Game extends Scene
         }
 
         // -------------------------------------------------
-        // PERFECT
+        // Perfect check
         // -------------------------------------------------
 
         const centerDifference =
@@ -569,8 +1128,11 @@ export class Game extends Scene
 
         if (isPerfect)
         {
-            finalX = this.baseX;
-            finalWidth = this.baseWidth;
+            finalX =
+                this.baseX;
+
+            finalWidth =
+                this.baseWidth;
         }
         else
         {
@@ -585,14 +1147,17 @@ export class Game extends Scene
         }
 
         // -------------------------------------------------
-        // FIGURE OUT OVERHANG
+        // Overhang
         // -------------------------------------------------
 
         let overhang = null;
 
         if (!isPerfect)
         {
-            if (currentLeft < previousLeft)
+            if (
+                currentLeft <
+                previousLeft
+            )
             {
                 overhang = {
                     width:
@@ -606,7 +1171,10 @@ export class Game extends Scene
                         ) / 2
                 };
             }
-            else if (currentRight > previousRight)
+            else if (
+                currentRight >
+                previousRight
+            )
             {
                 overhang = {
                     width:
@@ -623,32 +1191,43 @@ export class Game extends Scene
         }
 
         // -------------------------------------------------
-        // LANDING
+        // Landing position
         // -------------------------------------------------
 
         const targetY =
             this.baseY -
             this.blockHeight;
 
+        // -------------------------------------------------
+        // Landing animation
+        // -------------------------------------------------
+
         this.tweens.add({
-            targets: this.currentBlock,
+            targets:
+                this.currentBlock,
 
-            x: finalX,
-            y: targetY,
+            x:
+                finalX,
 
-            duration: 150,
+            y:
+                targetY,
 
-            ease: 'Quad.easeOut',
+            duration:
+                150,
 
-            onComplete: () =>
-            {
-                this.finishDrop(
-                    finalX,
-                    finalWidth,
-                    isPerfect,
-                    overhang
-                );
-            }
+            ease:
+                'Quad.easeOut',
+
+            onComplete:
+                () =>
+                {
+                    this.finishDrop(
+                        finalX,
+                        finalWidth,
+                        isPerfect,
+                        overhang
+                    );
+                }
         });
     }
 
@@ -669,7 +1248,7 @@ export class Game extends Scene
         }
 
         // -------------------------------------------------
-        // OVERHANG FALL
+        // Falling overhang
         // -------------------------------------------------
 
         if (
@@ -683,11 +1262,18 @@ export class Game extends Scene
                     this.baseY -
                     this.blockHeight,
                     overhang.width,
-                    this.getBlockColor()
+                    this.getBlockPalette(
+                        this.score
+                    ),
+                    false,
+                    false
                 );
 
+            fallingPiece.setDepth(1);
+
             this.tweens.add({
-                targets: fallingPiece,
+                targets:
+                    fallingPiece,
 
                 y:
                     fallingPiece.y +
@@ -697,56 +1283,51 @@ export class Game extends Scene
                     this.movingDirection *
                     18,
 
-                alpha: 0,
+                alpha:
+                    0,
 
-                duration: 520,
+                duration:
+                    520,
 
-                ease: 'Cubic.easeIn',
+                ease:
+                    'Cubic.easeIn',
 
-                onComplete: () =>
-                {
-                    fallingPiece.destroy();
-                }
+                onComplete:
+                    () =>
+                    {
+                        fallingPiece.destroy();
+                    }
             });
         }
 
         // -------------------------------------------------
-        // SET LANDED BLOCK SIZE
+        // Final block appearance
         // -------------------------------------------------
 
-        this.currentBlock.setSize(
+        const finalPalette =
+            isPerfect
+                ? this.perfectPalette
+                : this.getBlockPalette(
+                    this.score
+                );
+
+        this.updateBlockVisual(
+            this.currentBlock,
             finalWidth,
-            this.blockHeight
+            finalPalette,
+            isPerfect
         );
 
-        this.currentBlock.x =
-            finalX;
-
-        // Perfect blocks become gold.
-        if (isPerfect)
-        {
-            this.currentBlock.setFillStyle(
-                0xFDE047
-            );
-        }
-        else
-        {
-            this.currentBlock.setFillStyle(
-                this.getBlockColor()
-            );
-        }
+        this.currentBlock.setScale(
+            1,
+            1
+        );
 
         // -------------------------------------------------
-        // COMBO
+        // SCORE
         // -------------------------------------------------
 
         this.combo++;
-
-        /*
-         * Every 5 consecutive successful drops:
-         *
-         * 1x → 2x → 3x → 4x → 5x
-         */
 
         this.multiplier =
             Math.min(
@@ -758,7 +1339,7 @@ export class Game extends Scene
             );
 
         // -------------------------------------------------
-        // PERFECT STREAK
+        // Perfect streak
         // -------------------------------------------------
 
         if (isPerfect)
@@ -771,20 +1352,11 @@ export class Game extends Scene
         }
 
         // -------------------------------------------------
-        // SCORE
+        // Points
         // -------------------------------------------------
 
         let pointsEarned =
             this.multiplier;
-
-        /*
-         * Perfect streak adds bonus points after the
-         * first perfect.
-         *
-         * 1st perfect: +0
-         * 2nd perfect: +1
-         * 3rd+ perfect: +2
-         */
 
         if (isPerfect)
         {
@@ -805,8 +1377,15 @@ export class Game extends Scene
             String(this.score)
         );
 
+        // Hide the controls hint after the
+        // first successful placement.
+        if (this.score > 0 && this.combo === 1)
+        {
+            this.hideInstructionHint();
+        }
+
         // -------------------------------------------------
-        // HIGH SCORE
+        // High score
         // -------------------------------------------------
 
         if (
@@ -817,7 +1396,8 @@ export class Game extends Scene
             this.highScore =
                 this.score;
 
-            this.newHighScore = true;
+            this.newHighScore =
+                true;
 
             this.saveHighScore();
 
@@ -827,7 +1407,7 @@ export class Game extends Scene
         }
 
         // -------------------------------------------------
-        // UI FEEDBACK
+        // Feedback
         // -------------------------------------------------
 
         this.updateComboUI();
@@ -840,22 +1420,42 @@ export class Game extends Scene
             isPerfect
         );
 
-        // -------------------------------------------------
-        // PARTICLES
-        // -------------------------------------------------
-
         this.createImpactParticles(
             finalX,
             this.baseY -
             this.blockHeight / 2,
             isPerfect
-                ? 0xfacc15
-                : this.getBlockColor(),
-            isPerfect ? 12 : 7
+                ? this.perfectPalette.glow
+                : finalPalette.body,
+            isPerfect ? 14 : 8
         );
 
         // -------------------------------------------------
-        // SCREEN SHAKE
+        // Landing squash/stretch
+        // -------------------------------------------------
+
+        this.tweens.add({
+            targets:
+                this.currentBlock,
+
+            scaleX:
+                1.06,
+
+            scaleY:
+                0.84,
+
+            duration:
+                65,
+
+            ease:
+                'Quad.easeOut',
+
+            yoyo:
+                true
+        });
+
+        // -------------------------------------------------
+        // Camera feedback
         // -------------------------------------------------
 
         if (isPerfect)
@@ -868,13 +1468,13 @@ export class Game extends Scene
         else
         {
             this.cameras.main.shake(
-                45,
-                0.001
+                40,
+                0.0008
             );
         }
 
         // -------------------------------------------------
-        // PERFECT TEXT
+        // Perfect text
         // -------------------------------------------------
 
         if (isPerfect)
@@ -883,7 +1483,7 @@ export class Game extends Scene
         }
 
         // -------------------------------------------------
-        // UPDATE BASE
+        // New base
         // -------------------------------------------------
 
         this.baseX =
@@ -896,21 +1496,20 @@ export class Game extends Scene
             this.blockHeight;
 
         // -------------------------------------------------
-        // DIFFICULTY
+        // Difficulty
         // -------------------------------------------------
 
         this.blockSpeed +=
             this.speedIncrease;
 
-        // Slightly limit maximum speed.
         this.blockSpeed =
             Math.min(
-                650,
+                this.maxBlockSpeed,
                 this.blockSpeed
             );
 
         // -------------------------------------------------
-        // CREATE NEXT BLOCK
+        // Next block
         // -------------------------------------------------
 
         this.currentWidth =
@@ -928,6 +1527,84 @@ export class Game extends Scene
         this.isDropping = false;
     }
 
+        hideInstructionHint ()
+    {
+        if (!this.instructionText)
+        {
+            return;
+        }
+
+        // Don't let this animation happen more than once.
+        if (this.instructionHidden)
+        {
+            return;
+        }
+
+        this.instructionHidden = true;
+
+        this.tweens.add({
+            targets: [
+                this.instructionText,
+                this.instructionPanel
+            ],
+
+            alpha: 0,
+
+            duration: 350,
+
+            ease: 'Quad.easeOut',
+
+            onComplete: () =>
+            {
+                this.instructionText.setVisible(false);
+                this.instructionPanel.setVisible(false);
+            }
+        });
+    }
+
+        hideInstructionHint ()
+    {
+        if (
+            !this.instructionText ||
+            !this.instructionPanel
+        )
+        {
+            return;
+        }
+
+        // Prevent this from happening more than once.
+        if (this.instructionHidden)
+        {
+            return;
+        }
+
+        this.instructionHidden = true;
+
+        this.tweens.add({
+            targets: [
+                this.instructionText,
+                this.instructionPanel
+            ],
+
+            alpha: 0,
+
+            duration: 350,
+
+            ease: 'Quad.easeOut',
+
+            onComplete: () =>
+            {
+                this.instructionText.setVisible(
+                    false
+                );
+
+                this.instructionPanel.setVisible(
+                    false
+                );
+            }
+        });
+    }
+
     // =====================================================
     // COMBO UI
     // =====================================================
@@ -941,23 +1618,30 @@ export class Game extends Scene
         else
         {
             this.comboText.setText(
-                `COMBO  x${this.multiplier}`
+                `COMBO  ×${this.multiplier}`
             );
 
             this.tweens.add({
-                targets: this.comboText,
+                targets:
+                    this.comboText,
 
-                scale: 1.2,
+                scale:
+                    1.12,
 
-                duration: 90,
+                duration:
+                    90,
 
-                yoyo: true,
+                yoyo:
+                    true,
 
-                ease: 'Quad.easeOut'
+                ease:
+                    'Quad.easeOut'
             });
         }
 
-        if (this.perfectStreak < 2)
+        if (
+            this.perfectStreak < 2
+        )
         {
             this.perfectStreakText.setText('');
         }
@@ -970,7 +1654,7 @@ export class Game extends Scene
     }
 
     // =====================================================
-    // PERFECT FEEDBACK
+    // PERFECT TEXT
     // =====================================================
 
     showPerfectText ()
@@ -978,41 +1662,56 @@ export class Game extends Scene
         const text =
             this.add.text(
                 this.currentBlock.x,
-                this.currentBlock.y - 30,
+                this.currentBlock.y - 34,
                 'PERFECT!',
                 {
-                    fontFamily: 'Arial Black',
-                    fontSize: 24,
-                    color: '#facc15',
-                    stroke: '#000000',
-                    strokeThickness: 4
+                    fontFamily:
+                        'Arial Black',
+
+                    fontSize:
+                        25,
+
+                    color:
+                        '#FDE047',
+
+                    stroke:
+                        '#311B00',
+
+                    strokeThickness:
+                        4
                 }
             )
             .setOrigin(0.5);
 
         this.tweens.add({
-            targets: text,
+            targets:
+                text,
 
             y:
-                text.y - 40,
+                text.y - 42,
 
-            alpha: 0,
+            alpha:
+                0,
 
-            scale: 1.25,
+            scale:
+                1.25,
 
-            duration: 550,
+            duration:
+                550,
 
-            ease: 'Cubic.easeOut',
+            ease:
+                'Cubic.easeOut',
 
-            onComplete: () =>
-            {
-                text.destroy();
-            }
+            onComplete:
+                () =>
+                {
+                    text.destroy();
+                }
         });
     }
 
     // =====================================================
-    // POINTS FEEDBACK
+    // POINTS TEXT
     // =====================================================
 
     showPointsText (
@@ -1028,31 +1727,41 @@ export class Game extends Scene
                 y + 20,
                 `+${points}`,
                 {
-                    fontFamily: 'Arial Black',
-                    fontSize: 18,
+                    fontFamily:
+                        'Arial Black',
+
+                    fontSize:
+                        18,
+
                     color:
                         isPerfect
-                            ? '#facc15'
-                            : '#ffffff'
+                            ? '#FDE047'
+                            : '#F8FAFC'
                 }
             )
             .setOrigin(0.5);
 
         this.tweens.add({
-            targets: text,
+            targets:
+                text,
 
-            y: y - 15,
+            y:
+                y - 15,
 
-            alpha: 0,
+            alpha:
+                0,
 
-            duration: 450,
+            duration:
+                450,
 
-            ease: 'Cubic.easeOut',
+            ease:
+                'Cubic.easeOut',
 
-            onComplete: () =>
-            {
-                text.destroy();
-            }
+            onComplete:
+                () =>
+                {
+                    text.destroy();
+                }
         });
     }
 
@@ -1077,7 +1786,8 @@ export class Game extends Scene
                 this.add.circle(
                     x,
                     y,
-                    2 + Math.random() * 2,
+                    2 +
+                    Math.random() * 2,
                     color
                 );
 
@@ -1100,7 +1810,8 @@ export class Game extends Scene
                 speed;
 
             this.tweens.add({
-                targets: particle,
+                targets:
+                    particle,
 
                 x:
                     particle.x +
@@ -1110,20 +1821,24 @@ export class Game extends Scene
                     particle.y +
                     distanceY,
 
-                alpha: 0,
+                alpha:
+                    0,
 
-                scale: 0.2,
+                scale:
+                    0.2,
 
                 duration:
                     350 +
                     Math.random() * 250,
 
-                ease: 'Cubic.easeOut',
+                ease:
+                    'Cubic.easeOut',
 
-                onComplete: () =>
-                {
-                    particle.destroy();
-                }
+                onComplete:
+                    () =>
+                    {
+                        particle.destroy();
+                    }
             });
         }
     }
@@ -1137,9 +1852,11 @@ export class Game extends Scene
         const missedBlock =
             this.currentBlock;
 
-        this.currentBlock = null;
+        this.currentBlock =
+            null;
 
-        this.gameOver = true;
+        this.gameOver =
+            true;
 
         this.input.off(
             'pointerdown',
@@ -1147,14 +1864,30 @@ export class Game extends Scene
             this
         );
 
-        // Stronger shake for the final miss.
+        if (this.input.keyboard)
+        {
+            this.input.keyboard.off(
+                'keydown-SPACE',
+                this.dropBlock,
+                this
+            );
+
+            this.input.keyboard.off(
+                'keydown-ENTER',
+                this.dropBlock,
+                this
+            );
+        }
+
+        // Stronger final shake.
         this.cameras.main.shake(
             120,
             0.003
         );
 
         this.tweens.add({
-            targets: missedBlock,
+            targets:
+                missedBlock,
 
             y:
                 missedBlock.y +
@@ -1164,24 +1897,32 @@ export class Game extends Scene
                 this.movingDirection *
                 25,
 
-            alpha: 0,
+            alpha:
+                0,
 
-            duration: 500,
+            duration:
+                500,
 
-            ease: 'Cubic.easeIn',
+            ease:
+                'Cubic.easeIn',
 
-            onComplete: () =>
-            {
-                this.scene.start(
-                    'GameOver',
-                    {
-                        score: this.score,
-                        highScore: this.highScore,
-                        newHighScore:
-                            this.newHighScore
-                    }
-                );
-            }
+            onComplete:
+                () =>
+                {
+                    this.scene.start(
+                        'GameOver',
+                        {
+                            score:
+                                this.score,
+
+                            highScore:
+                                this.highScore,
+
+                            newHighScore:
+                                this.newHighScore
+                        }
+                    );
+                }
         });
     }
 }
